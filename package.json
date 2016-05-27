@@ -1,0 +1,19 @@
+{
+  "name": "mb-api-server",
+  "main": "server.js",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "xiaoluoboding <xiaoluoboding@gmail.com>",
+  "dependencies": {
+    "body-parser": "~1.13.2",
+    "express": "~4.13.1",
+    "morgan": "~1.6.1",
+    "mongoose": "^4.4.15"
+  },
+  "devDependencies": {
+    "nodemon": "^1.9.2"
+  }
+}
