@@ -1,5 +1,5 @@
 {
-  "name": "mb-api-server",
+  "name": "api-server",
   "main": "server.js",
   "version": "0.0.0",
   "private": true,
