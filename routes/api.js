@@ -1,55 +1,128 @@
 var express = require('express');
 var router = express.Router();
+var socket = require('socket.io-client')('http://localhost:3000', {'force new connection': true});
 var Message = require('../models/message')
+var Summary = require('../models/summary')
 
 router.get('/', function(req, res, next) {
-  res.json({ message: 'Welcome to MessageBox API' });
+    res.json({
+        message: 'Welcome to MessageBox API'
+    });
 });
 
 router.route('/message/:userid/:typeid/:type/:author/:title/:content')
 
-// create a bear (accessed at POST http://localhost:8080/bears)
+// create a message (accessed at POST http://localhost:8080/api/message)
 .post(function(req, res) {
-  var messageArray = {
-    id: '',
-    userid: req.params.userid,
-    userbrc: req.params.userbrc,
-    typeid: req.params.typeid,
-    type: req.params.type,
-    title: req.params.title,
-    author: req.params.author,
-    desc: req.params.content.substring(0, 48),
-    content: req.params.content,
-    sendtime: getNowFormatDate()
-  }
-  Message.create(messageArray, function (err, result) {
-    if (err) return console.log(err);
-    res.json({message: 'message created.'})
-  });
+    var messageArray = {
+        id: new Date().getTime(),
+        userid: req.params.userid,
+        userbrc: req.params.userbrc,
+        typeid: req.params.typeid,
+        type: req.params.type,
+        title: req.params.title,
+        author: req.params.author,
+        desc: req.params.content.substring(0, 48),
+        content: req.params.content,
+        sendtime: getNowFormatDate()
+    }
+    var mesContent = {
+      userid: req.params.userid,
+      title: req.params.title,
+      desc: req.params.content.substring(0, 48),
+      typeid: req.params.typeid
+    }
+    Message.create(messageArray, function(err, result) {
+        if (err) return console.log(err);
+        res.json({
+            message: 'message created.'
+        })
+        if (messageArray.type == 'private') { // private消息
+          Summary.findOne({
+            userid: messageArray.userid, typeid: messageArray.typeid
+          }, function(err, summary) {
+            var query = {
+              userid: messageArray.userid,
+              typeid: messageArray.typeid
+            };
+            var set = {
+              $set: {
+                count: summary.count + 1
+              }
+            }
+            var push = {
+              $push: {
+                message: {
+                  id: messageArray.id,
+                  title: messageArray.title,
+                  desc: messageArray.desc,
+                  sendtime: messageArray.sendtime,
+                  read: false
+                }
+              }
+            }
+
+            Summary.update(query, set).exec();
+            Summary.update(query, push).exec();
+          });
+          socket.emit('private message', mesContent);
+        } else { // public消息
+          Summary.find({
+            typeid: messageArray.typeid
+          }, function(err, summaries) {
+            for (var i in summaries) {
+              var query = {
+                userid: summaries[i].userid,
+                typeid: messageArray.typeid
+              };
+              var set = {
+                $set: {
+                  count: summaries[i].count + 1
+                }
+              };
+              var push = {
+                $push: {
+                  message: {
+                    id: messageArray.id,
+                    title: messageArray.title,
+                    desc: messageArray.desc,
+                    sendtime: messageArray.sendtime,
+                    read: false
+                  }
+                }
+              };
+              Summary.update(query, set).exec();
+              Summary.update(query, push).exec();
+            }
+          });
+          socket.emit('public message', mesContent);
+        }
+    });
 })
 
-// get all the bears (accessed at GET http://localhost:8080/api/bears)
+// get all the messages (accessed at GET http://localhost:8080/api/message)
 .get(function(req, res) {
-  Message.find({}, function(err, message){
-    if (err) return console.log(err);
-    res.json(message)
-  })
+    Message.find({}, function(err, message) {
+        if (err) return console.log(err);
+        res.json(message)
+    })
 });
 
 // 生成格式化后的当前时间
 function getNowFormatDate() {
-  var date = new Date();
-  var year = date.getFullYear();
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  var hours = date.getHours();
-  var minutes = date.getMinutes();
-  var seconds = date.getSeconds();
-  function format(arg) {
-    var reg = /^\d{1}$/;
-    return reg.test(arg) ? ("0" + arg) : arg;
-  }
-  return year + "-" + format(month) + "-" + format(day) + " " + format(hours) + ":" + format(minutes) + ":" + format(seconds);
+    var date = new Date();
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+
+    function format(arg) {
+        var reg = /^\d{1}$/;
+        return reg.test(arg) ? ("0" + arg) : arg;
+    }
+    return year + "-" + format(month) + "-" + format(day) + " " + format(hours) + ":" + format(minutes) + ":" + format(seconds);
 }
 
 module.exports = router;
