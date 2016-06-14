@@ -8,9 +8,9 @@ router.use(function(req, res, next) {
 	next();
 });
 
-/* GET index page. */
+// index 页面 (路径 http://localhost:3399)
 router.get('/', function(req, res, next) {
-  res.json({message: 'Welcome to MessageBox API' });
+  res.json({message: 'Welcome to MessageBox' });
 });
 
 module.exports = router;

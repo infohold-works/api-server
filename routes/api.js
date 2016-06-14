@@ -4,15 +4,24 @@ var socket = require('socket.io-client')('http://localhost:3000', {'force new co
 var Message = require('../models/message')
 var Summary = require('../models/summary')
 
+// API页面 (路径 GET http://localhost:3399/api)
 router.get('/', function(req, res, next) {
     res.json({
         message: 'Welcome to MessageBox API'
     });
 });
 
-router.route('/message/:userid/:typeid/:type/:author/:title/:content')
+// 获取所有消息 (路径 GET http://localhost:3399/api/message)
+router.route('/message')
+.get(function(req, res) {
+    Message.find({}, function(err, message) {
+        if (err) return console.log(err);
+        res.json(message)
+    })
+});
 
-// create a message (accessed at POST http://localhost:8080/api/message)
+// 创建消息并推送 (路径 POST http://localhost:3399/api/message/:userid/:typeid/:type/:author/:title/:content)
+router.route('/message/:userid/:typeid/:type/:author/:title/:content')
 .post(function(req, res) {
     var messageArray = {
         id: new Date().getTime(),
@@ -99,14 +108,6 @@ router.route('/message/:userid/:typeid/:type/:author/:title/:content')
         }
     });
 })
-
-// get all the messages (accessed at GET http://localhost:8080/api/message)
-.get(function(req, res) {
-    Message.find({}, function(err, message) {
-        if (err) return console.log(err);
-        res.json(message)
-    })
-});
 
 // 生成格式化后的当前时间
 function getNowFormatDate() {
