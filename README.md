@@ -44,7 +44,7 @@
 ```json
 {
   "message": "Message created.",
-  "id":1466473237032
+  "id":36222aa0-377c-11e6-825c-e7dc08197a61
 }
 ```
 id作用是获取当前发布消息的id，以便后续根据id进行查询
@@ -60,14 +60,14 @@ id作用是获取当前发布消息的id，以便后续根据id进行查询
 
 ```json
 {
-    "id": 1466473237032,
-    "userid": "00000001",
-    "typeid": 1,
-    "type": "private",
-    "title": "xxxxx",
-    "author": "system",
-    "desc": "xxxxxxx",
-    "content": "xxxxxxx",
-    "sendtime": "2016-06-21 09:40:37"
-  }
+  "id": 36222aa0-377c-11e6-825c-e7dc08197a61,
+  "userid": "00000001",
+  "typeid": 1,
+  "type": "private",
+  "title": "xxxxx",
+  "author": "system",
+  "desc": "xxxxxxx",
+  "content": "xxxxxxx",
+  "sendtime": "2016-06-21 09:40:37"
+}
 ```

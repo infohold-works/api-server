@@ -21,7 +21,7 @@ router.route('/message')
     })
 });
 
-// 获取所有消息 (路径 GET http://localhost:3399/api/message/:id)
+// 根据消息id获取消息 (路径 GET http://localhost:3399/api/message/:id)
 router.route('/message/:id')
 .get(function(req, res) {
     Message.find({"id": req.params.id}, function(err, message) {
