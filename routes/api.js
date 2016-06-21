@@ -3,6 +3,7 @@ var router = express.Router();
 var socket = require('socket.io-client')('http://localhost:3000', {'force new connection': true});
 var Message = require('../models/message')
 var Summary = require('../models/summary')
+var uuid = require('node-uuid');
 
 // API页面 (路径 GET http://localhost:3399/api)
 router.get('/', function(req, res, next) {
@@ -23,7 +24,7 @@ router.route('/message')
 // 获取所有消息 (路径 GET http://localhost:3399/api/message/:id)
 router.route('/message/:id')
 .get(function(req, res) {
-    Message.find({"id":req.params.id}, function(err, message) {
+    Message.find({"id": req.params.id}, function(err, message) {
         if (err) return console.log(err);
         res.json(message)
     })
@@ -33,7 +34,7 @@ router.route('/message/:id')
 router.route('/message/:userid/:typeid/:type/:author/:title/:content')
 .post(function(req, res) {
     var messageArray = {
-        id: new Date().getTime(),
+        id: uuid.v1(),
         userid: req.params.userid,
         userbrc: req.params.userbrc,
         typeid: req.params.typeid,
@@ -54,7 +55,7 @@ router.route('/message/:userid/:typeid/:type/:author/:title/:content')
         if (err) return console.log(err);
         res.json({
             message: 'message created.',
-            id:messageArray.id
+            id: messageArray.id
         })
         if (messageArray.type == 'private') { // private消息
           Summary.findOne({

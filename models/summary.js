@@ -5,7 +5,7 @@ var summarySchema = new Schema({
   userid: String,
   typeid: Number,
   message: [{
-    id: Number,
+    id: String,
     title: String,
     desc: String,
     sendtime: String,

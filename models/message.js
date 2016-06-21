@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var MessageSchema = new Schema({
-	id: Number,
+	id: String,
   userid: String,
   userbrc: String,
   typeid: Number,
