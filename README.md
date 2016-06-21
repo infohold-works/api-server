@@ -43,6 +43,31 @@
 
 ```json
 {
-  "message": "Message created."
+  "message": "Message created.",
+  "id":1466473237032
 }
+```
+id作用是获取当前发布消息的id，以便后续根据id进行查询
+
+#### 根据id查询消息
+
+> GET /api/message/:id
+
+* 路径：http://localhost:3399/api/message
+* 操作类型：GET
+* 参数：id
+* 返回结果：
+
+```json
+{
+    "id": 1466473237032,
+    "userid": "00000001",
+    "typeid": 1,
+    "type": "private",
+    "title": "xxxxx",
+    "author": "system",
+    "desc": "xxxxxxx",
+    "content": "xxxxxxx",
+    "sendtime": "2016-06-21 09:40:37"
+  }
 ```

@@ -20,6 +20,15 @@ router.route('/message')
     })
 });
 
+// 获取所有消息 (路径 GET http://localhost:3399/api/message/:id)
+router.route('/message/:id')
+.get(function(req, res) {
+    Message.find({"id":req.params.id}, function(err, message) {
+        if (err) return console.log(err);
+        res.json(message)
+    })
+});
+
 // 创建消息并推送 (路径 POST http://localhost:3399/api/message/:userid/:typeid/:type/:author/:title/:content)
 router.route('/message/:userid/:typeid/:type/:author/:title/:content')
 .post(function(req, res) {
@@ -44,7 +53,8 @@ router.route('/message/:userid/:typeid/:type/:author/:title/:content')
     Message.create(messageArray, function(err, result) {
         if (err) return console.log(err);
         res.json({
-            message: 'message created.'
+            message: 'message created.',
+            id:messageArray.id
         })
         if (messageArray.type == 'private') { // private消息
           Summary.findOne({
