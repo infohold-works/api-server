@@ -3,8 +3,8 @@ var router = express.Router();
 var socket = require('socket.io-client')('http://localhost:3000', {
   'force new connection': true
 });
-var Message = require('../models/message')
-var Summary = require('../models/summary')
+var Message = require('../models/message');
+var Summary = require('../models/summary');
 var uuid = require('node-uuid');
 
 // API页面 (路径 GET http://localhost:3399/api)
