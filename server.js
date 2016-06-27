@@ -7,21 +7,23 @@ var index = require('./routes/index');
 var api = require('./routes/api');
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://8.1.3.213:27017/test')
+mongoose.connect('mongodb://localhost:27017/test')
 
 var app = express();
 var port = process.env.PORT || 3399; // set our port
 
 app.use(morgan('dev')); // log requests to the console
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 
 //设置跨域访问
 app.all('*', function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    res.header("Content-Type", "application/json;charset=utf-8");
-    next();
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Content-Type", "application/json;charset=utf-8");
+  next();
 });
 
 app.use('/', index);

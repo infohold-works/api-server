@@ -20,16 +20,16 @@ router.route('/:token/message')
   .get(function(req, res) {
     User.find({
       "id": req.params.token
-    }, function(err, user){
-      if(err) return console.log(err);
-      if(user != "" && user != "[]"){
+    }, function(err, user) {
+      if (err) return console.log(err);
+      if (user != "" && user != "[]") {
         Message.find({}, function(err, message) {
           if (err) return console.log(err);
           res.json(message)
         })
       } else {
         res.json({
-           message:"'token' is incorrect, please enter again"
+          message: "'token' is incorrect, please enter again"
         });
       }
     })
@@ -40,9 +40,9 @@ router.route('/:token/message/:id')
   .get(function(req, res) {
     User.find({
       "id": req.params.token
-    }, function(err, user){
-      if(err) return console.log(err);
-      if(user != "" && user != "[]"){
+    }, function(err, user) {
+      if (err) return console.log(err);
+      if (user != "" && user != "[]") {
         Message.find({
           "id": req.params.id
         }, function(err, message) {
@@ -51,20 +51,20 @@ router.route('/:token/message/:id')
         })
       } else {
         res.json({
-           message:"'token' is incorrect, please enter again"
+          message: "'token' is incorrect, please enter again"
         });
       }
+    });
   });
-});
 
 // 创建消息并推送 (路径 POST http://localhost:3399/api/:token/message/:userid/:typeid/:type/:author/:title/:content)
 router.route('/:token/message/:userid/:typeid/:type/:author/:title/:content')
   .post(function(req, res) {
     User.find({
       "id": req.params.token
-    }, function(err, user){
-      if(err) return console.log(err);
-      if(user != "" && user != "[]"){
+    }, function(err, user) {
+      if (err) return console.log(err);
+      if (user != "" && user != "[]") {
         var messageArray = {
           id: uuid.v1(),
           userid: req.params.userid,
@@ -159,7 +159,7 @@ router.route('/:token/message/:userid/:typeid/:type/:author/:title/:content')
         });
       } else {
         res.json({
-           message:"'token' is incorrect, please enter again"
+          message: "'token' is incorrect, please enter again"
         });
       }
     })
