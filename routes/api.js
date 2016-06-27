@@ -7,20 +7,6 @@ var Message = require('../models/message');
 var Summary = require('../models/summary');
 var User = require('../models/user');
 var uuid = require('node-uuid');
-var Hashmap = require('hashmap');
-var hashmap = new Hashmap();
-
-router.use(function(req, res, next){
-  User.find({}, function(err, message) {
-    if (err) return console.log(err);
-    for(var i=0;i<message.length;i++) {
-      id = message[i].id;
-      userid = message[i].userid;
-      hashmap.set(id, userid);
-    }
-  })
-  next();
-})
 
 // API页面 (路径 http://localhost:3399/api)
 router.get('/', function(req, res, next) {
@@ -29,129 +15,94 @@ router.get('/', function(req, res, next) {
   });
 });
 
-// 对请求进行判断 (路径 http://localhost:3399/api/:token)
-router.route('/:token')
-  .get(function(req, res, next){
-    if(hashmap.has(req.params.token)){
-      res.json({
-        message: 'Through the verification'
-      });
-      console.log('Through the verification');
-    } else {
-      res.json({
-        message: "'token' is incorrect, please enter again"
-      });
-      console.log("'token' is incorrect, please enter again");
-    }
-});
-
 // 获取所有消息 (路径 GET http://localhost:3399/api/:token/message)
 router.route('/:token/message')
   .get(function(req, res) {
-    if(hashmap.has(req.params.token)){
-      Message.find({}, function(err, message) {
-        if (err) return console.log(err);
-        res.json(message)
-      })
-    } else {
-      res.json({
-        message:"'token' is incorrect, please enter again"
-      });
-    }
+    User.find({
+      "id": req.params.token
+    }, function(err, user){
+      if(err) return console.log(err);
+      if(user != "" && user != "[]"){
+        Message.find({}, function(err, message) {
+          if (err) return console.log(err);
+          res.json(message)
+        })
+      } else {
+        res.json({
+           message:"'token' is incorrect, please enter again"
+        });
+      }
+    })
   });
 
 // 根据消息id获取消息 (路径 GET http://localhost:3399/api/:token/message/:id)
 router.route('/:token/message/:id')
   .get(function(req, res) {
-    if(hashmap.has(req.params.token)){
-      Message.find({
-        "id": req.params.id
-      }, function(err, message) {
-        if (err) return console.log(err);
-        res.json(message)
-      })
-    } else {
-      res.json({
-         message:"'token' is incorrect, please enter again"
-      });
-    }
+    User.find({
+      "id": req.params.token
+    }, function(err, user){
+      if(err) return console.log(err);
+      if(user != "" && user != "[]"){
+        Message.find({
+          "id": req.params.id
+        }, function(err, message) {
+          if (err) return console.log(err);
+          res.json(message)
+        })
+      } else {
+        res.json({
+           message:"'token' is incorrect, please enter again"
+        });
+      }
   });
+});
 
 // 创建消息并推送 (路径 POST http://localhost:3399/api/:token/message/:userid/:typeid/:type/:author/:title/:content)
 router.route('/:token/message/:userid/:typeid/:type/:author/:title/:content')
   .post(function(req, res) {
-    if(hashmap.has(req.params.token)){
-      var messageArray = {
-        id: uuid.v1(),
-        userid: req.params.userid,
-        userbrc: req.params.userbrc,
-        typeid: req.params.typeid,
-        type: req.params.type,
-        title: req.params.title,
-        author: req.params.author,
-        desc: req.params.content.substring(0, 48),
-        content: req.params.content,
-        sendtime: getNowFormatDate()
-      }
-      var mesContent = {
-        userid: req.params.userid,
-        title: req.params.title,
-        desc: req.params.content.substring(0, 48),
-        typeid: req.params.typeid
-      }
-      Message.create(messageArray, function(err, result) {
-        if (err) return console.log(err);
-        res.json({
-          message: 'message created.',
-          id: messageArray.id
-        })
-        if (messageArray.type == 'private') { // private消息
-          Summary.findOne({
-            userid: messageArray.userid,
-            typeid: messageArray.typeid
-          }, function(err, summary) {
-            var query = {
+    User.find({
+      "id": req.params.token
+    }, function(err, user){
+      if(err) return console.log(err);
+      if(user != "" && user != "[]"){
+        var messageArray = {
+          id: uuid.v1(),
+          userid: req.params.userid,
+          userbrc: req.params.userbrc,
+          typeid: req.params.typeid,
+          type: req.params.type,
+          title: req.params.title,
+          author: req.params.author,
+          desc: req.params.content.substring(0, 48),
+          content: req.params.content,
+          sendtime: getNowFormatDate()
+        }
+        var mesContent = {
+          userid: req.params.userid,
+          title: req.params.title,
+          desc: req.params.content.substring(0, 48),
+          typeid: req.params.typeid
+        }
+        Message.create(messageArray, function(err, result) {
+          if (err) return console.log(err);
+          res.json({
+            message: 'message created.',
+            id: messageArray.id
+          })
+          if (messageArray.type == 'private') { // private消息
+            Summary.findOne({
               userid: messageArray.userid,
               typeid: messageArray.typeid
-            };
-            var set = {
-              $set: {
-                count: summary.count + 1
-              }
-            }
-            var push = {
-              $push: {
-                message: {
-                  id: messageArray.id,
-                  title: messageArray.title,
-                  desc: messageArray.desc,
-                  sendtime: messageArray.sendtime,
-                  read: false
-                }
-              }
-            }
-
-            Summary.update(query, set).exec();
-            Summary.update(query, push, null, function(err, raw) {
-              if (!err) {
-                socket.emit('private message', mesContent);
-              }
-            });
-          });
-        } else { // public消息
-          Summary.find({
-            typeid: messageArray.typeid
-          }, function(err, summaries) {
-            for (var i in summaries) {
+            }, function(err, summary) {
               var query = {
-                userid: summaries[i].userid,
+                userid: messageArray.userid,
                 typeid: messageArray.typeid
               };
               var set = {
                 $set: {
-                  count: summaries[i].count + 1
+                  count: summary.count + 1
                 }
-              };
+              }
               var push = {
                 $push: {
                   message: {
@@ -162,23 +113,57 @@ router.route('/:token/message/:userid/:typeid/:type/:author/:title/:content')
                     read: false
                   }
                 }
-              };
+              }
+
               Summary.update(query, set).exec();
               Summary.update(query, push, null, function(err, raw) {
                 if (!err) {
-                  socket.emit('public message', mesContent);
+                  socket.emit('private message', mesContent);
                 }
               });
-            }
-          });
-        }
-      });
-    } else {
-      res.json({
-         message:"'token' is incorrect, please enter again"
-      });
-    }
-  })
+            });
+          } else { // public消息
+            Summary.find({
+              typeid: messageArray.typeid
+            }, function(err, summaries) {
+              for (var i in summaries) {
+                var query = {
+                  userid: summaries[i].userid,
+                  typeid: messageArray.typeid
+                };
+                var set = {
+                  $set: {
+                    count: summaries[i].count + 1
+                  }
+                };
+                var push = {
+                  $push: {
+                    message: {
+                      id: messageArray.id,
+                      title: messageArray.title,
+                      desc: messageArray.desc,
+                      sendtime: messageArray.sendtime,
+                      read: false
+                    }
+                  }
+                };
+                Summary.update(query, set).exec();
+                Summary.update(query, push, null, function(err, raw) {
+                  if (!err) {
+                    socket.emit('public message', mesContent);
+                  }
+                });
+              }
+            });
+          }
+        });
+      } else {
+        res.json({
+           message:"'token' is incorrect, please enter again"
+        });
+      }
+    })
+  });
 
 // 生成格式化后的当前时间
 function getNowFormatDate() {

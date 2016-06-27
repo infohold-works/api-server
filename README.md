@@ -22,14 +22,15 @@
 
 #### 消息发布
 
-> POST /api/message/:userid/:typeid/:type/:author/:title/:content
+> POST /api/:token/message/:userid/:typeid/:type/:author/:title/:content
 
-* 路径：http://localhost:3399/api/message
+* 路径：http://localhost:3399/api/:token/message
 * 操作类型：POST
 * 参数：
 
 | 字段       |    说明   |
 | :-------- | :--------:|
+| token | 访问权限验证 |
 | userid| 用户id：如果是私有消息，此项必填作为接收者；如果是公共消息，可以为空。 |
 | typeid| 消息类型id：1/2/3/4/5/6 |
 | type  | 消息种类  ：public（公共）消息/private（私有）消息 |
@@ -37,7 +38,7 @@
 | title | 消息标题 |
 | content | 消息内容 |
 
-* 例子：`http://localhost:3399/api/message/000001/1/private/测试发布者/测试标题/测试内容`
+* 例子：`http://localhost:3399/api/*****/message/000001/1/private/测试发布者/测试标题/测试内容`
 
 * 返回结果：
 
@@ -51,11 +52,11 @@ id作用是获取当前发布消息的id，以便后续根据id进行查询
 
 #### 根据id查询消息
 
-> GET /api/message/:id
+> GET /api/:token/message/:id
 
-* 路径：http://localhost:3399/api/message
+* 路径：http://localhost:3399/api/:token/message
 * 操作类型：GET
-* 参数：id
+* 参数：token, id
 * 返回结果：
 
 ```json
